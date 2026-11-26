@@ -1,0 +1,31 @@
+name: WorkBuddy 每日签到
+
+on:
+  # GitHub cron 使用 UTC；01:00 UTC = 北京时间 09:00
+  schedule:
+    - cron: '0 1 * * *'
+  # 允许在 Actions 页面手动触发，用于验证配置
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workbuddy-daily-checkin
+  cancel-in-progress: false
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Run WorkBuddy check-in
+        env:
+          WORKBUDDY_ACCESS_TOKEN: ${{ secrets.WORKBUDDY_ACCESS_TOKEN }}
+          WORKBUDDY_UID: ${{ secrets.WORKBUDDY_UID }}
+        run: python3 checkin.py
